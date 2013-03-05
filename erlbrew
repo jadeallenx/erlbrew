@@ -82,15 +82,15 @@ install() {
 }
 
 use() {
-  if [ ! -d "$BIN_PATH" ];
+  if [ ! -d "$BIN_PATH" ]; then
     mkdir -p "$BIN_PATH"
   else
     rm -rf "$BIN_PATH"
     mkdir -p "$BIN_PATH"
   fi
 
-  if [ -d "$INSTALL" ];
-    for file in $(ls "$INSTALL/lib/erlang/bin")
+  if [ -d "$INSTALL" ]; then
+    for file in $(ls "$INSTALL/lib/erlang/bin/"*)
     do
       ln -s $file "$BIN_PATH"
     done
