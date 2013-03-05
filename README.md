@@ -90,6 +90,11 @@ Examples
     Building Erlang R15B03
     Installing Erlang R15B03
 
+See also
+--------
+* [kerl](https://github.com/spawngrid/kerl) - same idea, better implementation :)
+* [perlbrew](https://github.com/gugod/App-perlbrew) - my inspiration
+
 License
 -------
 Copyright (c) 2013 Mark Allen
