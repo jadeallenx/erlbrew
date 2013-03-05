@@ -1,0 +1,128 @@
+#!/bin/bash
+#
+# erlbrew: simplify / automate side-by-side Erlang builds
+#
+# Copyright (C) 2013 Mark Allen
+# This software is released under the terms of the MIT license
+# included in the README file or available here:
+# http://opensource.org/licenses/MIT
+
+set -e
+set -u 
+set -x
+
+CMD=$1
+RELEASE=$2
+WORK="$HOME/erlbrew"
+BUILD="$WORK/.build"
+INSTALL="$WORK/$RELEASE"
+FILENAME="otp_src_$RELEASE"
+DOWNLOAD_FILE="$FILENAME.tar.gz"
+TARBALL_PATH="$BUILD/tarballs"
+CHECKSUM_PATH="$BUILD/MD5"
+TMP_PATH="$BUILD/work.$$"
+DOWNLOAD_PATH="$BUILD/tarballs/$DOWNLOAD_FILE"
+DOWNLOAD_URL="http://www.erlang.org/download/$DOWNLOAD_FILE"
+DOWNLOAD_TOOL=$(which curl)
+DOWNLOAD_TOOL_FLAGS="--fail --progress-bar --show-error"
+DOWNLOAD_OTP_CMD="$DOWNLOAD_TOOL $DOWNLOAD_TOOL_FLAGS --output $DOWNLOAD_PATH $DOWNLOAD_URL"
+DOWNLOAD_CHECKSUM_CMD="$DOWNLOAD_TOOL --insecure $DOWNLOAD_TOOL_FLAGS --output $CHECKSUM_PATH https://www.erlang.org/download/MD5"
+BIN_PATH="$HOME/bin/erlbrew"
+UNTAR_CMD=$(which tar)
+UNTAR_FLAGS="-zxvf"
+
+download() {
+  if [ ! -d "$TARBALL_PATH" ]; then
+    mkdir -p "$TARBALL_PATH"
+  fi
+
+  if [ ! -e "$DOWNLOAD_PATH" ]; then
+    $DOWNLOAD_OTP_CMD
+  else
+    echo "You appear to have Erlang $RELEASE downloaded."
+  fi
+
+  if [ ! -e "$CHECKSUM_PATH" ]; then
+      $DOWNLOAD_CHECKSUM_CMD
+  fi
+
+  CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH | cut -d" " -f2)
+  COMPUTED_CHECKSUM=$(md5 -q $DOWNLOAD_PATH)
+  if [ "$CHECKSUM_FILE_VALUE" != "$COMPUTED_CHECKSUM" ]; then
+    echo "The file $DOWNLOAD_PATH has MD5"
+    echo "$COMPUTED_CHECKSUM and it should have"
+    echo "$CHECKSUM_FILE_VALUE"
+    exit 1
+  fi
+
+  echo "Tarball has correct MD5 checksum"
+    
+}
+
+build() {
+  mkdir -p "$TMP_PATH"
+  cp -a "$DOWNLOAD_PATH" "$TMP_PATH"
+  cd "$TMP_PATH"
+  $UNTAR_CMD $UNTAR_FLAGS $DOWNLOAD_FILE
+  cd "$FILENAME"
+  ./configure --prefix="$INSTALL" --enable-darwin-64bit --without-javac --disable-hipe
+  touch lib/wx/SKIP
+  make
+}
+
+install() {
+  if [ ! -d "$INSTALL" ]; then
+    mkdir -p "$INSTALL"
+  else
+    rm -rf "$INSTALL"
+    mkdir -p "$INSTALL"
+  fi
+
+  make install
+}
+
+use() {
+  if [ ! -d "$BIN_PATH" ];
+    mkdir -p "$BIN_PATH"
+  else
+    rm -rf "$BIN_PATH"
+    mkdir -p "$BIN_PATH"
+  fi
+
+  if [ -d "$INSTALL" ];
+    for file in $(ls "$INSTALL/lib/erlang/bin")
+    do
+      ln -s $file "$BIN_PATH"
+    done
+
+    hash -r
+  else
+    echo "Erlang $RELEASE doesn't seem to be installed."
+    exit 1
+  fi
+}
+
+
+case "$CMD" in
+    download)
+        download
+        ;;
+    build)
+        download
+        build
+        ;;
+    install)
+        download
+        build
+        install
+        ;;
+    use)
+        use
+        ;;
+    *)
+        echo "Usage: $0 {download|build|install|use} {release-spec}"
+        exit 1
+
+esac
+
+
