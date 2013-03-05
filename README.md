@@ -1,6 +1,6 @@
 erlbrew
 =======
-Erlbrew is a silly bash script designed to reduce the pain of installing
+Erlbrew is a bash script designed to reduce the pain of installing
 various versions of Erlang side-by-side.
 
 Installation
@@ -8,39 +8,87 @@ Installation
 Drop `erlbrew` into $HOME/bin.  Make sure it's executable as in `chmod +x
 erlbrew`. You may optionally need to throw a `hash -r` to your bash shell.
 
-You should also edit your $PATH to include $HOME/bin/erlbrew in whatever
+You should also edit your $PATH to include `$HOME/bin/erlbrew.d` in whatever
 position you like. It probably makes the most sense to put it *first* in your
 list though.
+
+Dependencies
+------------
+erlbrew explicitly relies on the following tools:
+
+* GNU tar
+* curl
+
+It also assumes that you have a working compiler environment with
+GNU make, GCC (or Apple's LLVM backed GCC), and other compiler
+tools like flex and as.
+
+If you installed [Apple's "command line compiler" package](https://developer.apple.com/downloads), 
+you should be good to go. If not, you can get them without having to download
+*all* of Xcode from the App Store.
 
 Usage
 -----
 Once erlbrew is installed and executable, it accepts four basic commands:
 
-* download
-* build
-* install
+* `download`
+* `build`
+* `install`
 
 These commands do what it says on the tin.  Also install implies build and
 download, build implies download and download implies nothing.
 
 Finally, once you have an installed Erlang environment, use the `use` command
-to make erlbrew build a bunch of symbolic links to $HOME/bin/erlbrew and then
+to make erlbrew build a bunch of symbolic links in $HOME/bin/erlbrew.d/ and 
 rehash your bash command cache.
 
 Supported platform
 ------------------
 At the moment only Mac OS X is supported.  It should be easy to add Linux or
-other Unix support.  I've had some troubles building Erlang on Mac OS X 10.8
-though so I might crib some solutions from the homebrew erlang recipe.
+other Unix support.  
+
+Something broke
+---------------
+erlbrew does its work in a work directory located at `$HOME/erlbrew/.build/current`
+It also writes a logfile in this directory named `erlbrew.log` which contains
+all messages from STDOUT and STDERR.
+
+Cleanup
+-------
+erlbrew scans its work directory for build directories that are older than 7 days
+and deletes them automatically.
 
 Examples
 --------
 
-    erlbrew install R14B04
-    erlbrew use R14B04
+    $ erlbrew use R14B04
+    You have switched to Erlang R14B04
+    $ erl
 
-    erlbrew install R16B
-    erlbrew use R16B
+    Erlang R14B04 (erts-5.8.5) [source] [64-bit] [smp:2:2] [rq:2] [async-threads:0] [kernel-poll:false]
+
+    Eshell V5.8.5  (abort with ^G)
+    1> q().
+    ok
+    
+    $ erlbrew use R16B
+    You have switched to Erlang R16B
+    $ erl
+
+    Erlang R16B (erts-5.10.1) [source] [64-bit] [smp:2:2] [async-threads:10] [kernel-poll:false]
+
+    Eshell V5.10.1  (abort with ^G)
+    1> q().
+    ok
+
+    $ erlbrew install R15B03
+    Downloading Erlang R15B03
+    ######################################################################## 100.0%
+    Tarball has correct MD5 checksum
+    Unpacking Erlang R15B03
+    Configuring Erlang R15B03 for Darwin
+    Building Erlang R15B03
+    Installing Erlang R15B03
 
 License
 -------

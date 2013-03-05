@@ -9,7 +9,6 @@
 
 set -e
 set -u 
-set -x
 
 CMD=$1
 RELEASE=$2
@@ -27,9 +26,16 @@ DOWNLOAD_TOOL=$(which curl)
 DOWNLOAD_TOOL_FLAGS="--fail --progress-bar --show-error"
 DOWNLOAD_OTP_CMD="$DOWNLOAD_TOOL $DOWNLOAD_TOOL_FLAGS --output $DOWNLOAD_PATH $DOWNLOAD_URL"
 DOWNLOAD_CHECKSUM_CMD="$DOWNLOAD_TOOL --insecure $DOWNLOAD_TOOL_FLAGS --output $CHECKSUM_PATH https://www.erlang.org/download/MD5"
-BIN_PATH="$HOME/bin/erlbrew"
+BIN_PATH="$HOME/bin/erlbrew.d"
 UNTAR_CMD=$(which tar)
 UNTAR_FLAGS="-zxvf"
+
+_cleanup() {
+  for directory in $(find "$BUILD" -name "work*" -type d -mtime +7d -print)
+  do
+    rm -rf $directory
+  done
+}
 
 download() {
   if [ ! -d "$TARBALL_PATH" ]; then
@@ -37,6 +43,7 @@ download() {
   fi
 
   if [ ! -e "$DOWNLOAD_PATH" ]; then
+    echo "Downloading Erlang $RELEASE"
     $DOWNLOAD_OTP_CMD
   else
     echo "You appear to have Erlang $RELEASE downloaded."
@@ -61,14 +68,31 @@ download() {
 
 build() {
   mkdir -p "$TMP_PATH"
+  rm -f "$BUILD/current"
+  ln -s "$TMP_PATH" "$BUILD/current"
   cp -a "$DOWNLOAD_PATH" "$TMP_PATH"
   cd "$TMP_PATH"
-  $UNTAR_CMD $UNTAR_FLAGS $DOWNLOAD_FILE
+  echo "Unpacking Erlang $RELEASE"
+  $UNTAR_CMD $UNTAR_FLAGS $DOWNLOAD_FILE 1>>"$TMP_PATH/erlbrew.log" 2>&1
   cd "$FILENAME"
-  CFLAGS=-O0 ./configure --disable-hipe --disable-javac --enable-smp-support \
+
+  OS_TYPE=$(uname -s)
+
+  echo "Configuring Erlang $RELEASE for $OS_TYPE"
+  case "$OS_TYPE" in
+    Darwin)
+      CFLAGS=-O0 ./configure --disable-hipe --without-javac --enable-smp-support \
                          --enable-threads --enable-kernel-poll \
-                         --enable-darwin-64bit --prefix="$INSTALL" 
-  make
+                         --enable-darwin-64bit --prefix="$INSTALL" 1>>"$TMP_PATH/erlbrew.log" 2>&1
+      ;;
+    *)
+      echo "Sorry $OS_TYPE isn't supported yet. Patches welcome. :)"
+      exit 1
+  esac
+
+  echo "Building Erlang $RELEASE"
+  make 1>>"$TMP_PATH/erlbrew.log" 2>&1
+
 }
 
 install() {
@@ -79,7 +103,9 @@ install() {
     mkdir -p "$INSTALL"
   fi
 
-  make install
+  echo "Installing Erlang $RELEASE"
+  make install 1>>"$TMP_PATH/erlbrew.log" 2>&1
+
 }
 
 use() {
@@ -97,6 +123,7 @@ use() {
     done
 
     hash -r
+    echo "You have switched to Erlang $RELEASE"
   else
     echo "Erlang $RELEASE doesn't seem to be installed."
     exit 1
@@ -106,24 +133,25 @@ use() {
 
 case "$CMD" in
     download)
+        _cleanup
         download
         ;;
     build)
+        _cleanup
         download
         build
         ;;
     install)
+        _cleanup
         download
         build
         install
         ;;
     use)
+        _cleanup
         use
         ;;
     *)
         echo "Usage: $0 {download|build|install|use} {release-spec}"
         exit 1
-
 esac
-
-
