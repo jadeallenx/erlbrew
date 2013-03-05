@@ -65,8 +65,9 @@ build() {
   cd "$TMP_PATH"
   $UNTAR_CMD $UNTAR_FLAGS $DOWNLOAD_FILE
   cd "$FILENAME"
-  ./configure --prefix="$INSTALL" --enable-darwin-64bit --without-javac --disable-hipe
-  touch lib/wx/SKIP
+  CFLAGS=-O0 ./configure --disable-hipe --disable-javac --enable-smp-support \
+                         --enable-threads --enable-kernel-poll \
+                         --enable-darwin-64bit --prefix="$INSTALL" 
   make
 }
 
