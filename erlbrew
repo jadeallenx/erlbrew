@@ -10,8 +10,19 @@
 set -e
 set -u 
 
-CMD=$1
-RELEASE=$2
+usage() {
+  echo "Usage: $0 {download|build|install|use} {release-spec}"
+}
+
+if (( $# > 2 ))
+then
+  CMD=$1
+  RELEASE=$2
+else
+  usage
+  exit 1
+fi
+
 WORK="$HOME/erlbrew"
 BUILD="$WORK/.build"
 INSTALL="$WORK/$RELEASE"
@@ -130,7 +141,6 @@ use() {
   fi
 }
 
-
 case "$CMD" in
     download)
         _cleanup
@@ -152,6 +162,6 @@ case "$CMD" in
         use
         ;;
     *)
-        echo "Usage: $0 {download|build|install|use} {release-spec}"
+        usage
         exit 1
 esac
