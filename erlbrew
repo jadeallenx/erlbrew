@@ -11,19 +11,29 @@ set -e
 set -u 
 
 usage() {
-  echo "Usage: $0 {download|build|install|use} {release-spec}"
+  echo "Usage: $0 {download|build|install|use|list} [release-spec]"
 }
 
-if (( $# >= 2 ))
-then
+if (( $# > 2 )); then
+    usage
+    exit 1
+elif (( $# == 2 )); then
   CMD=$1
   RELEASE=$2
+elif (( $# == 1 )); then
+    if [[ "$1" != "list" ]]; then
+        usage
+        exit 1
+    fi
+    CMD=$1
+    RELEASE="dummy"
 else
   usage
   exit 1
 fi
 
 WORK="$HOME/erlbrew"
+STATE="$WORK/.erlbrew_current"
 BUILD="$WORK/.build"
 INSTALL="$WORK/$RELEASE"
 FILENAME="otp_src_$RELEASE"
@@ -134,11 +144,27 @@ use() {
     done
 
     hash -r
+    echo $RELEASE > "$HOME/.erlbrew_current"
     echo "You have switched to Erlang $RELEASE"
   else
     echo "Erlang $RELEASE doesn't seem to be installed."
     exit 1
   fi
+}
+
+list() {
+  CURRENT="hoge"
+  if [ -e "$STATE" ]; then
+    CURRENT=$(<"$STATE")
+  fi
+  for r in $(ls -1 $WORK)
+  do
+    if [[ "$r" == "$CURRENT" ]]; then
+      echo "* $r"
+    else
+      echo "  $r"
+    fi
+  done
 }
 
 case "$CMD" in
@@ -160,6 +186,10 @@ case "$CMD" in
     use)
         _cleanup
         use
+        ;;
+    list)
+        _cleanup
+        list
         ;;
     *)
         usage
