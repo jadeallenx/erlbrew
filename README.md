@@ -16,6 +16,7 @@ Dependencies
 ------------
 erlbrew explicitly relies on the following tools:
 
+* bash
 * GNU tar
 * curl
 
@@ -29,18 +30,24 @@ you should be good to go. If not, you can get them without having to download
 
 Usage
 -----
-Once erlbrew is installed and executable, it accepts four basic commands:
+Once erlbrew is installed and executable, it accepts five basic commands:
 
 * `download`
 * `build`
 * `install`
+* `use`
+* `list`
 
-These commands do what it says on the tin.  Also install implies build and
-download, build implies download and download implies nothing.
+These commands do what it says on the tin.  `install` implies build and
+download, `build` implies download.
 
-Finally, once you have an installed Erlang environment, use the `use` command
-to make erlbrew build a bunch of symbolic links in $HOME/bin/erlbrew.d/ and 
+Once you have an installed Erlang environment, use the `use` command
+to make erlbrew build a bunch of symbolic links in `$HOME/bin/erlbrew.d/` and 
 rehash your bash command cache.
+
+You can also use the `list` command (with no release spec) to see the
+installed releases available. A `*` will be listed next to the release
+currently in use.
 
 Supported platform
 ------------------
@@ -89,6 +96,11 @@ Examples
     Configuring Erlang R15B03 for Darwin
     Building Erlang R15B03
     Installing Erlang R15B03
+
+    $ erlbrew list
+    * R14B04
+      R15B03
+      R16B
 
 See also
 --------
