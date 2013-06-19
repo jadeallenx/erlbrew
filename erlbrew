@@ -70,11 +70,14 @@ download() {
     echo "You appear to have Erlang $RELEASE downloaded."
   fi
 
-  if [ ! -e "$CHECKSUM_PATH" ]; then
+  CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH | cut -d" " -f2)
+
+  if [ ! -e "$CHECKSUM_PATH" ] || [ -z "$CHECKSUM_FILE_VALUE" ] ; then
       $DOWNLOAD_CHECKSUM_CMD
+
+      CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH | cut -d" " -f2)
   fi
 
-  CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH | cut -d" " -f2)
   COMPUTED_CHECKSUM=$(md5 -q $DOWNLOAD_PATH)
   if [ "$CHECKSUM_FILE_VALUE" != "$COMPUTED_CHECKSUM" ]; then
     echo "The file $DOWNLOAD_PATH has MD5"
