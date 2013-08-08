@@ -147,7 +147,7 @@ use() {
     done
 
     hash -r
-    echo $RELEASE > "$HOME/.erlbrew_current"
+    echo $RELEASE > "$STATE"
     echo "You have switched to Erlang $RELEASE"
   else
     echo "Erlang $RELEASE doesn't seem to be installed."
