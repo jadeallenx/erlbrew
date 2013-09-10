@@ -8,7 +8,7 @@
 # http://opensource.org/licenses/MIT
 
 set -e
-set -u 
+set -u
 
 usage() {
   echo "Usage: $0 {download|build|install|use|list} [release-spec]"
@@ -52,10 +52,12 @@ UNTAR_CMD=$(which tar)
 UNTAR_FLAGS="-zxvf"
 
 _cleanup() {
-  for directory in $(find "$BUILD" -name "work*" -type d -mtime +7d -print)
-  do
-    rm -rf $directory
-  done
+  if [ -d $BUILD ]; then
+    for directory in $(find "$BUILD" -name "work*" -type d -mtime +7d -print)
+    do
+      rm -rf $directory
+    done
+  fi
 }
 
 download() {
@@ -87,7 +89,7 @@ download() {
   fi
 
   echo "Tarball has correct MD5 checksum"
-    
+
 }
 
 build() {
@@ -147,7 +149,7 @@ use() {
     done
 
     hash -r
-    echo $RELEASE > "$STATE"
+    echo $RELEASE > "$HOME/.erlbrew_current"
     echo "You have switched to Erlang $RELEASE"
   else
     echo "Erlang $RELEASE doesn't seem to be installed."
@@ -160,14 +162,19 @@ list() {
   if [ -e "$STATE" ]; then
     CURRENT=$(<"$STATE")
   fi
-  for r in $(ls -1 $WORK)
-  do
-    if [[ "$r" == "$CURRENT" ]]; then
-      echo "* $r"
-    else
-      echo "  $r"
-    fi
-  done
+  if [ -d $WORK ]; then
+    for r in $(ls -1 $WORK)
+    do
+      if [[ "$r" == "$CURRENT" ]]; then
+        echo "* $r"
+      else
+        echo "  $r"
+      fi
+    done
+  else
+    echo "No Erlang environments installed"
+    exit 1
+  fi
 }
 
 case "$CMD" in
