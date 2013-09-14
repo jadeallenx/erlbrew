@@ -72,9 +72,10 @@ download() {
     echo "You appear to have Erlang $RELEASE downloaded."
   fi
 
-  CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH | cut -d" " -f2)
+  CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH 2>/dev/null | cut -d" " -f2)
 
   if [ ! -e "$CHECKSUM_PATH" ] || [ -z "$CHECKSUM_FILE_VALUE" ] ; then
+      echo "Downloading checksum file"
       $DOWNLOAD_CHECKSUM_CMD
 
       CHECKSUM_FILE_VALUE=$(grep $DOWNLOAD_FILE $CHECKSUM_PATH | cut -d" " -f2)
