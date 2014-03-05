@@ -39,7 +39,9 @@ Once erlbrew is installed and executable, it accepts five basic commands:
 * `list`
 
 These commands do what it says on the tin.  `install` implies build and
-download, `build` implies download.
+download, `build` implies download. If you wish, you can augment the
+flags passed to the `configure` script by putting them in the shell 
+variable `ERLBREW_CONFIGURE_OPTIONS`.
 
 Once you have an installed Erlang environment, use the `use` command
 to make erlbrew build a bunch of symbolic links in `$HOME/bin/erlbrew.d/` and 
@@ -88,12 +90,12 @@ Examples
     1> q().
     ok
 
-    $ erlbrew install R15B03
+    $ ERLBREW_CONFIGURE_OPTIONS='--with-dynamic-trace=dtrace' erlbrew install R15B03
     Downloading Erlang R15B03
     ######################################################################## 100.0%
     Tarball has correct MD5 checksum
     Unpacking Erlang R15B03
-    Configuring Erlang R15B03 for Darwin
+    Configuring Erlang R15B03 for darwin13
     Building Erlang R15B03
     Installing Erlang R15B03
 

@@ -119,7 +119,7 @@ build() {
       esac
     fi
 
-    CFLAGS="$CFLAGS -O0" ./configure --disable-hipe --without-javac --enable-smp-support \
+    CFLAGS="$CFLAGS -O0" ./configure "$ERLBREW_CONFIGURE_OPTIONS" --disable-hipe --without-javac --enable-smp-support \
                        --enable-threads --enable-kernel-poll --without-odbc \
                        --enable-darwin-64bit --prefix="$INSTALL" 1>>"$TMP_PATH/erlbrew.log" 2>&1
   else
