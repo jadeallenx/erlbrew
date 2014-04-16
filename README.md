@@ -90,7 +90,8 @@ Examples
     1> q().
     ok
 
-    $ ERLBREW_CONFIGURE_OPTIONS='--with-dynamic-trace=dtrace' erlbrew install R15B03
+    $ ERLBREW_CONFIGURE_OPTIONS='--with-dynamic-trace=dtrace'
+    erlbrew install R15B03
     Downloading Erlang R15B03
     ######################################################################## 100.0%
     Tarball has correct MD5 checksum
