@@ -43,6 +43,10 @@ download, `build` implies download. If you wish, you can augment the
 flags passed to the `configure` script by putting them in the shell 
 variable `ERLBREW_CONFIGURE_OPTIONS`.
 
+You may also set `ERLBREW_MAKE_DOCS` if you want erlbrew to build the
+release documentation. (The default behavior is to **not** build 
+documentation.)
+
 Once you have an installed Erlang environment, use the `use` command
 to make erlbrew build a bunch of symbolic links in `$HOME/bin/erlbrew.d/` and 
 rehash your bash command cache.
