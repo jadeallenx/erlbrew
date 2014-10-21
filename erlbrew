@@ -147,7 +147,7 @@ install() {
   echo "Installing Erlang $RELEASE"
   make install 1>>"$TMP_PATH/erlbrew.log" 2>&1
 
-  if [ $ERLBREW_MAKE_DOCS ]; then
+  if [ ${ERLBREW_MAKE_DOCS:-''} ]; then
     echo "Installing Erlang $RELEASE documentation"
     make install-docs 1>>"$TMP_PATH/erlbrew.log" 2>&1
   fi
