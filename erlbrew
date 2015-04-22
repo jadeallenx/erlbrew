@@ -20,7 +20,7 @@ _map_dir() {
   case $1 in
     R15B03-1)
       # R15B03-1 unpacks to just R15B03
-      RELEASE_SUFFIX="R15B03" 
+      RELEASE_SUFFIX="R15B03"
   esac
   echo "otp_src_$RELEASE_SUFFIX"
 }
@@ -140,6 +140,14 @@ build() {
   fi
 
   echo "Building Erlang $RELEASE"
+  # Make process paralelization to match cpu cores
+  # http://blog.equanimity.nl/blog/2014/03/29/your-first-erlang-program/
+  if [[ "$OSTYPE" =~ darwin(.*) ]]
+  then
+    MAKEFLAGS=-j`sysctl -n hw.ncpu`
+  else
+    MAKEFLAGS=-j`grep --count processor /proc/cpuinfo`
+  fi
   make 1>>"$TMP_PATH/erlbrew.log" 2>&1
 
   if [ ${ERLBREW_MAKE_DOCS:-''} ]; then
@@ -214,7 +222,7 @@ apply_r14_osx_patch() {
 +++ erts/emulator/beam/beam_bp.c	2013-10-04 13:42:03.000000000 -0500
 @@ -496,7 +496,8 @@
  }
- 
+
  /* bp_hash */
 -ERTS_INLINE Uint bp_sched2ix() {
 +#ifndef ERTS_DO_INCL_GLB_INLINE_FUNC_DEF
@@ -235,7 +243,7 @@ apply_r14_osx_patch() {
 @@ -144,7 +144,19 @@
  #define ErtsSmpBPUnlock(BDC)
  #endif
- 
+
 -ERTS_INLINE Uint bp_sched2ix(void);
 +ERTS_GLB_INLINE Uint bp_sched2ix(void);
 +
@@ -250,7 +258,7 @@ apply_r14_osx_patch() {
 +#endif
 +}
 +#endif
- 
+
  #ifdef ERTS_SMP
  #define bp_sched2ix_proc(p) ((p)->scheduler_data->no - 1)
 END_OF_PATCH
