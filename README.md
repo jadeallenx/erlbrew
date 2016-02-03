@@ -70,6 +70,13 @@ dropping the R and the build numbers.  So for the most recent release (as of
 3 November 2014), you would type:
 
     $ erlbrew install 17.3
+
+As of El Capitan (OS X 10.11), Apple removed OpenSSL from its default compiler
+tool distribution. OS X now ships with Apple's own cryptography library, but
+Erlang still is bound to OpenSSL - however, there appears to be an OpenSSL
+environment that's part of Xcode, so if erlbrew detects that its running on
+El Capitan, it will automatically add the SSL path so that crypto libraries
+build properly.
     
 Something broke
 ---------------
