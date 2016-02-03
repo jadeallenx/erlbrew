@@ -44,7 +44,7 @@ TMP_PATH="$BUILD/work.$$"
 DOWNLOAD_PATH="$BUILD/tarballs/$DOWNLOAD_FILE"
 DOWNLOAD_URL="https://www.erlang.org/download/$DOWNLOAD_FILE"
 DOWNLOAD_TOOL=$(which curl)
-DOWNLOAD_TOOL_FLAGS="--insecure --fail --progress-bar --show-error"
+DOWNLOAD_TOOL_FLAGS="--insecure --fail --progress-bar --location --show-error"
 DOWNLOAD_OTP_CMD="$DOWNLOAD_TOOL $DOWNLOAD_TOOL_FLAGS --output $DOWNLOAD_PATH $DOWNLOAD_URL"
 DOWNLOAD_CHECKSUM_CMD="$DOWNLOAD_TOOL $DOWNLOAD_TOOL_FLAGS --output $CHECKSUM_PATH https://www.erlang.org/download/MD5"
 BIN_PATH="$HOME/bin/erlbrew.d"
@@ -105,6 +105,10 @@ build() {
 
   echo "Configuring Erlang $RELEASE for $OSTYPE"
   CFLAGS=""
+  if [[ "${ERLBREW_CONFIGURE_OPTIONS:-unset}" == "unset" ]]
+  then
+    ERLBREW_CONFIGURE_OPTIONS=""
+  fi
 
   if [[ "$OSTYPE" =~ darwin(.*) ]]
   then
@@ -119,7 +123,15 @@ build() {
       esac
     fi
 
-    CFLAGS="$CFLAGS -O0" ./configure ${ERLBREW_CONFIGURE_OPTIONS:-''} --disable-hipe --without-javac --enable-smp-support \
+    # Apple removed OpenSSL from El Capitan but its still in this funky
+    # location, so auto set this - probably fragile but better than Erlang
+    # without a functioning crypto application
+    if [[ $VERSION -ge 15 ]]
+    then
+      ERLBREW_CONFIGURE_OPTIONS="--with-ssl=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-migrator/sdk/MacOSX.sdk/usr $ERLBREW_CONFIGURE_OPTIONS"
+    fi
+
+    CFLAGS="$CFLAGS -O0" ./configure $ERLBREW_CONFIGURE_OPTIONS --disable-hipe --without-javac --enable-smp-support \
                        --enable-threads --enable-kernel-poll --without-odbc \
                        --enable-darwin-64bit --prefix="$INSTALL" 1>>"$TMP_PATH/erlbrew.log" 2>&1
   else
