@@ -60,6 +60,17 @@ Supported platform
 At the moment only Mac OS X is supported.  It should be easy to add Linux or
 other Unix support.  
 
+Some selected Erlang versions
+-----------------------------
+`erlbrew` has been tested and works on R14B04 onward.  Building Erlang before R14
+may or may not work and we have little interest in making it work if its broken. (Sorry!)
+
+For the [release of Erlang 17](http://erlang.org/pipermail/erlang-questions/2014-April/078563.html), Ericcson decided to move to a new release naming scheme,
+dropping the R and the build numbers.  So for the most recent release (as of 
+3 November 2014), you would type:
+
+    $ erlbrew install 17.3
+    
 Something broke
 ---------------
 erlbrew does its work in a work directory located at `$HOME/erlbrew/.build/current`

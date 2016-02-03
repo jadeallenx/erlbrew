@@ -14,6 +14,17 @@ usage() {
   echo "Usage: $0 {download|build|install|use|list} [release-spec]"
 }
 
+# Given a release, map it to the appropriate directory when unpacked
+_map_dir() {
+  RELEASE_SUFFIX=$1
+  case $1 in
+    R15B03-1)
+      # R15B03-1 unpacks to just R15B03
+      RELEASE_SUFFIX="R15B03" 
+  esac
+  echo "otp_src_$RELEASE_SUFFIX"
+}
+
 if (( $# > 2 )); then
     usage
     exit 1
@@ -37,6 +48,7 @@ STATE="$WORK/.erlbrew_current"
 BUILD="$WORK/.build"
 INSTALL="$WORK/$RELEASE"
 FILENAME="otp_src_$RELEASE"
+DIRNAME="$(_map_dir $RELEASE)"
 DOWNLOAD_FILE="$FILENAME.tar.gz"
 TARBALL_PATH="$BUILD/tarballs"
 CHECKSUM_PATH="$BUILD/MD5"
@@ -101,7 +113,7 @@ build() {
   cd "$TMP_PATH"
   echo "Unpacking Erlang $RELEASE"
   $UNTAR_CMD $UNTAR_FLAGS $DOWNLOAD_FILE 1>>"$TMP_PATH/erlbrew.log" 2>&1
-  cd "$FILENAME"
+  cd "$DIRNAME"
 
   echo "Configuring Erlang $RELEASE for $OSTYPE"
   CFLAGS=""
