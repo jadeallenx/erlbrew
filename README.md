@@ -8,7 +8,7 @@ Installation
 Drop `erlbrew` into $HOME/bin.  Make sure it's executable as in `chmod +x
 erlbrew`. You may optionally need to throw a `hash -r` to your bash shell.
 
-You should also edit your $PATH to include `$HOME/bin/erlbrew.d` in whatever
+You should also edit your $PATH to include `$HOME/bin/.erlbrew.d` in whatever
 position you like. It probably makes the most sense to put it *first* in your
 list though.
 
@@ -65,22 +65,43 @@ Some selected Erlang versions
 `erlbrew` has been tested and works on R14B04 onward.  Building Erlang before R14
 may or may not work and we have little interest in making it work if its broken. (Sorry!)
 
-For the [release of Erlang 17](http://erlang.org/pipermail/erlang-questions/2014-April/078563.html), Ericcson decided to move to a new release naming scheme,
-dropping the R and the build numbers.  So for the most recent release (as of 
-3 November 2014), you would type:
+For the [release of Erlang 17 and later](http://erlang.org/pipermail/erlang-questions/2014-April/078563.html), 
+Ericcson decided to move to a new release naming scheme, dropping the R and the
+build numbers.  So for the these releases, you would type:
 
-    $ erlbrew install 17.3
+    $ erlbrew install 17.5
 
+for example.
+
+Building Crypto on El Capitan
+-----------------------------
 As of El Capitan (OS X 10.11), Apple removed OpenSSL from its default compiler
 tool distribution. OS X now ships with Apple's own cryptography library, but
-Erlang still is bound to OpenSSL - however, there appears to be an OpenSSL
-environment that's part of Xcode, so if erlbrew detects that its running on
-El Capitan, it will automatically add the SSL path so that crypto libraries
-build properly.
-    
+Erlang still is bound to OpenSSL. 
+
+A new environment variable `ERLBREW_OPENSSL_PATH` has been added. If erlbrew
+detects that it's running on El Capitan, it will search `ERLBREW_OPENSSL_PATH`
+first with a default location of `/usr/local/ssl`, and as a fall back, there 
+appears to be an OpenSSL environment that's shipped as part of Xcode.  If 
+neither location exists, then the script will error out.
+
+If you use something like `brew install openssl`, then you should invoke an
+installation like this:
+ 
+    $ ERLBREW_OPENSSL_PATH="/usr/local/opt/openssl" erlbrew install XX.Y
+
+Default build options
+---------------------
+In addition to the SSL library munging above, erlbrew also enables dirty schedulers
+for Erlang 17 and 18 and DTrace support for everything. You can override that 
+by specifying your own `ERLBREW_CONFIGURE_OPTIONS` if you wish.
+
+**N.B.** If you specify your own configure options, you must also include appropriate
+ssl library location(s) if needed.
+
 Something broke
 ---------------
-erlbrew does its work in a work directory located at `$HOME/erlbrew/.build/current`
+erlbrew does its work in a work directory located at `$HOME/.erlbrew/.build/current`
 It also writes a logfile in this directory named `erlbrew.log` which contains
 all messages from STDOUT and STDERR.
 
@@ -102,29 +123,18 @@ Examples
     1> q().
     ok
     
-    $ erlbrew use R16B
-    You have switched to Erlang R16B
-    $ erl
-
-    Erlang R16B (erts-5.10.1) [source] [64-bit] [smp:2:2] [async-threads:10] [kernel-poll:false]
-
-    Eshell V5.10.1  (abort with ^G)
-    1> q().
-    ok
-
-    $ ERLBREW_CONFIGURE_OPTIONS='--with-dynamic-trace=dtrace' erlbrew install R15B03
-    Downloading Erlang R15B03
-    ######################################################################## 100.0%
-    Tarball has correct MD5 checksum
-    Unpacking Erlang R15B03
-    Configuring Erlang R15B03 for darwin13
-    Building Erlang R15B03
-    Installing Erlang R15B03
-
     $ erlbrew list
     * R14B04
       R15B03
-      R16B
+
+    $ erlbrew install 18.2.1
+    Downloading Erlang 18.2.1
+    ######################################################################## 100.0%
+    Tarball has correct MD5 checksum
+    Unpacking Erlang 18.2.1
+    Configuring Erlang 18.2.1 for darwin15
+    Building Erlang 18.2.1
+    Installing Erlang 18.2.1
 
 See also
 --------
@@ -133,7 +143,7 @@ See also
 
 License
 -------
-Copyright (c) 2013 Mark Allen
+Copyright (c) 2016 Mark Allen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
