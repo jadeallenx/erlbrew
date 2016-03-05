@@ -2,7 +2,7 @@
 #
 # erlbrew: simplify / automate side-by-side Erlang builds
 #
-# Copyright (C) 2013 Mark Allen
+# Copyright (C) 2016 Mark Allen
 # This software is released under the terms of the MIT license
 # included in the README file or available here:
 # http://opensource.org/licenses/MIT
@@ -43,7 +43,7 @@ else
   exit 1
 fi
 
-WORK="$HOME/erlbrew"
+WORK="$HOME/.erlbrew"
 STATE="$WORK/.erlbrew_current"
 BUILD="$WORK/.build"
 INSTALL="$WORK/$RELEASE"
@@ -59,7 +59,7 @@ DOWNLOAD_TOOL=$(which curl)
 DOWNLOAD_TOOL_FLAGS="--insecure --fail --progress-bar --location --show-error"
 DOWNLOAD_OTP_CMD="$DOWNLOAD_TOOL $DOWNLOAD_TOOL_FLAGS --output $DOWNLOAD_PATH $DOWNLOAD_URL"
 DOWNLOAD_CHECKSUM_CMD="$DOWNLOAD_TOOL $DOWNLOAD_TOOL_FLAGS --output $CHECKSUM_PATH https://www.erlang.org/download/MD5"
-BIN_PATH="$HOME/bin/erlbrew.d"
+BIN_PATH="$HOME/bin/.erlbrew.d"
 UNTAR_CMD=$(which tar)
 UNTAR_FLAGS="-zxvf"
 
@@ -116,18 +116,15 @@ build() {
   cd "$DIRNAME"
 
   echo "Configuring Erlang $RELEASE for $OSTYPE"
-  CFLAGS=""
-  if [[ "${ERLBREW_CONFIGURE_OPTIONS:-unset}" == "unset" ]]
-  then
-    ERLBREW_CONFIGURE_OPTIONS=""
+
+  if [[ "${CFLAGS:-unset}" == "unset" ]]; then
+    CFLAGS=""
   fi
 
-  if [[ "$OSTYPE" =~ darwin(.*) ]]
-  then
+  if [[ "$OSTYPE" =~ darwin(.*) ]]; then
     VERSION=${BASH_REMATCH[1]}
     # Patch the R14 source in OS X 10.8 or newer (Mountain Lion, Mavericks)
-    if [[ $VERSION -ge 12 ]]
-    then
+    if [[ $VERSION -ge 12 ]]; then
       case "$RELEASE" in
         R14*)
           CFLAGS="-DERTS_DO_INCL_GLB_INLINE_FUNC_DEF"
@@ -135,12 +132,33 @@ build() {
       esac
     fi
 
-    # Apple removed OpenSSL from El Capitan but its still in this funky
-    # location, so auto set this - probably fragile but better than Erlang
-    # without a functioning crypto application
-    if [[ $VERSION -ge 15 ]]
-    then
-      ERLBREW_CONFIGURE_OPTIONS="--with-ssl=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-migrator/sdk/MacOSX.sdk/usr $ERLBREW_CONFIGURE_OPTIONS"
+    if [[ "${ERLBREW_CONFIGURE_OPTIONS:-unset}" == "unset" ]]; then
+      ERLBREW_CONFIGURE_OPTIONS=""
+
+      if [ $VERSION -ge 15 ]; then
+        if [[ "${ERLBREW_OPENSSL_PATH:-unset}" == "unset" ]]; then
+          ERLBREW_OPENSSL_PATH="/usr/local/ssl"
+        fi
+
+        if [ -d "$ERLBREW_OPENSSL_PATH" ]; then
+          ERLBREW_CONFIGURE_OPTIONS="--with-ssl=$ERLBREW_OPENSSL_PATH $ERLBREW_CONFIGURE_OPTIONS"
+        elif [ -d /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-migrator/sdk/MacOSX.sdk/usr ]; then
+          # Apple removed OpenSSL from El Capitan but its still in this funky
+          # location, so auto set this if the directory exists - fragile but
+          # better than nothing
+          ERLBREW_CONFIGURE_OPTIONS="--with-ssl=/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-migrator/sdk/MacOSX.sdk/usr $ERLBREW_CONFIGURE_OPTIONS"
+        else
+          echo "I can't figure out where OpenSSL is on this system. Set ERLBREW_OPENSSL_PATH and retry."
+          exit 1
+        fi
+      fi
+
+      case "$RELEASE" in
+        17*|18*|19*)
+          ERLBREW_CONFIGURE_OPTIONS=" --enable-dirty-schedulers $ERLBREW_CONFIGURE_OPTIONS"
+      esac
+
+      ERLBREW_CONFIGURE_OPTIONS=" --with-dynamic-trace=dtrace $ERLBREW_CONFIGURE_OPTIONS"
     fi
 
     CFLAGS="$CFLAGS -O0" ./configure $ERLBREW_CONFIGURE_OPTIONS --disable-hipe --without-javac --enable-smp-support \
